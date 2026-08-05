@@ -21,6 +21,22 @@
   font-size: 14px;
 }
 
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.topbar-info {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+.topbar-val {
+  color: var(--accent-cyan);
+}
+.topbar-val-green {
+  color: var(--success-green);
+}
+
 .status-badge {
   display: inline-flex;
   align-items: center;
@@ -86,6 +102,56 @@
   width: 20px;
   text-align: center;
 }
+
+/* Right Panel Inspector Elements */
+.panel-title {
+  font-size: 13px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+.panel-subtitle {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+.badge-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+.panel-heading {
+  font-size: 12px;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+.panel-heading-spaced {
+  font-size: 12px;
+  color: var(--text-primary);
+  margin-top: 16px;
+  margin-bottom: 8px;
+}
+.formula-box {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 8px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--accent-cyan);
+}
+.band-distribution {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+.band-delta-val { color: var(--band-delta); }
+.band-theta-val { color: var(--band-theta); }
+.band-alpha-val { color: var(--band-alpha); }
+.band-beta-val { color: var(--band-beta); }
+.band-gamma-val { color: var(--band-gamma); }
+
+.telemetry-val { color: var(--accent-cyan); }
+.telemetry-green { color: var(--success-green); }
 
 /* KPI Cards Grid */
 .kpi-grid {

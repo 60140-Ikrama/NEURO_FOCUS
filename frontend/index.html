@@ -24,12 +24,12 @@
         <span class="status-badge"><span class="status-dot"></span> v1.0.0 Research Edition</span>
       </div>
 
-      <div style="display: flex; align-items: center; gap: 20px;">
-        <div style="font-size: 11px; color: var(--text-secondary);">
-          Dataset: <strong style="color: var(--accent-cyan);" id="top-dataset-name">PhysioNet_S001 (Focused)</strong> | 
-          fs: <strong style="color: var(--accent-cyan);">256 Hz</strong> | 
-          Duration: <strong style="color: var(--accent-cyan);">30.0s</strong> | 
-          SQI: <strong style="color: var(--success-green);" id="top-sqi-score">95.4% (Excellent)</strong>
+      <div class="topbar-actions">
+        <div class="topbar-info">
+          Dataset: <strong class="topbar-val" id="top-dataset-name">PhysioNet_S001 (Focused)</strong> | 
+          fs: <strong class="topbar-val">256 Hz</strong> | 
+          Duration: <strong class="topbar-val">30.0s</strong> | 
+          SQI: <strong class="topbar-val-green" id="top-sqi-score">95.4% (Excellent)</strong>
         </div>
 
         <button class="sci-btn outline" onclick="toggleSidebar()">☰ Toggle Sidebar</button>
@@ -77,10 +77,10 @@
 
     <!-- RIGHT ANALYSIS PANEL -->
     <aside id="right-panel">
-      <h3 style="font-size: 13px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px;">Live Channel Inspector</h3>
+      <h3 class="panel-title">Live Channel Inspector</h3>
       <div id="channel-inspector-content">
-        <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 8px;">Active Channels (13 System):</div>
-        <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px;">
+        <div class="panel-subtitle">Active Channels (13 System):</div>
+        <div class="badge-container">
           <span class="status-badge">Fp1</span><span class="status-badge">Fp2</span>
           <span class="status-badge">F3</span><span class="status-badge">F4</span>
           <span class="status-badge">C3</span><span class="status-badge">C4</span>
@@ -90,18 +90,18 @@
           <span class="status-badge">Pz</span>
         </div>
 
-        <h4 style="font-size: 12px; color: var(--text-primary); margin-bottom: 8px;">Active Formula:</h4>
-        <div style="background: rgba(0,0,0,0.3); padding: 8px; border-radius: 4px; font-family: var(--font-mono); font-size: 11px; color: var(--accent-cyan);">
+        <h4 class="panel-heading">Active Formula:</h4>
+        <div class="formula-box">
           beta / theta
         </div>
 
-        <h4 style="font-size: 12px; color: var(--text-primary); margin-top: 16px; margin-bottom: 8px;">Band Power Distribution:</h4>
-        <div style="font-size: 11px; color: var(--text-secondary);">
-          <div>Delta (0.5-4Hz): <strong style="color: var(--band-delta);">8.4%</strong></div>
-          <div>Theta (4-8Hz): <strong style="color: var(--band-theta);">12.1%</strong></div>
-          <div>Alpha (8-13Hz): <strong style="color: var(--band-alpha);">18.2%</strong></div>
-          <div>Beta (13-30Hz): <strong style="color: var(--band-beta);">45.6%</strong></div>
-          <div>Gamma (30-40Hz): <strong style="color: var(--band-gamma);">15.7%</strong></div>
+        <h4 class="panel-heading-spaced">Band Power Distribution:</h4>
+        <div class="band-distribution">
+          <div>Delta (0.5-4Hz): <strong class="band-delta-val">8.4%</strong></div>
+          <div>Theta (4-8Hz): <strong class="band-theta-val">12.1%</strong></div>
+          <div>Alpha (8-13Hz): <strong class="band-alpha-val">18.2%</strong></div>
+          <div>Beta (13-30Hz): <strong class="band-beta-val">45.6%</strong></div>
+          <div>Gamma (30-40Hz): <strong class="band-gamma-val">15.7%</strong></div>
         </div>
       </div>
     </aside>
@@ -112,7 +112,7 @@
         [13:45:44] SYSTEM READY | Signal Quality Audit: 13/13 Channels Passed (95.4%) | Mode: Non-ML BSP
       </div>
       <div>
-        CPU: <span style="color: var(--accent-cyan);">2.4%</span> | RAM: <span style="color: var(--accent-cyan);">142 MB</span> | Telemetry: <span style="color: var(--success-green);">Stable</span>
+        CPU: <span class="telemetry-val">2.4%</span> | RAM: <span class="telemetry-val">142 MB</span> | Telemetry: <span class="telemetry-green">Stable</span>
       </div>
     </footer>
 
