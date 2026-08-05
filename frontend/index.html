@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NeuroLearn Research Suite - EEG Biomedical Signal Processing Platform</title>
+  
+  <!-- CSS Design System -->
+  <link rel="stylesheet" href="css/medical_theme.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+
+  <!-- Plotly.js for Scientific Charts -->
+  <script src="https://cdn.plot.ly/plotly-2.26.0.min.js"></script>
+</head>
+<body>
+  <div id="app-container">
+    
+    <!-- TOP APP BAR -->
+    <header id="top-bar">
+      <div class="brand-title">
+        <div class="brand-logo">🧠</div>
+        <span>NeuroLearn Research Suite</span>
+        <span class="status-badge"><span class="status-dot"></span> v1.0.0 Research Edition</span>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 20px;">
+        <div style="font-size: 11px; color: var(--text-secondary);">
+          Dataset: <strong style="color: var(--accent-cyan);" id="top-dataset-name">PhysioNet_S001 (Focused)</strong> | 
+          fs: <strong style="color: var(--accent-cyan);">256 Hz</strong> | 
+          Duration: <strong style="color: var(--accent-cyan);">30.0s</strong> | 
+          SQI: <strong style="color: var(--success-green);" id="top-sqi-score">95.4% (Excellent)</strong>
+        </div>
+
+        <button class="sci-btn outline" onclick="toggleSidebar()">☰ Toggle Sidebar</button>
+        <button class="sci-btn" onclick="switchWorkspace('reports')">📄 Export Report</button>
+      </div>
+    </header>
+
+    <!-- LEFT SIDEBAR (21 RESEARCH VIEWS) -->
+    <aside id="left-sidebar">
+      <div class="nav-section-title">DATA MANAGEMENT</div>
+      <div class="nav-item active" onclick="switchWorkspace('dashboard')"><span class="nav-icon">📊</span> Dashboard</div>
+      <div class="nav-item" onclick="switchWorkspace('dataset_manager')"><span class="nav-icon">📁</span> Dataset Manager</div>
+      <div class="nav-item" onclick="switchWorkspace('biopac_manager')"><span class="nav-icon">⚡</span> Biopac Manager</div>
+      <div class="nav-item" onclick="switchWorkspace('physionet_manager')"><span class="nav-icon">🌐</span> PhysioNet Manager</div>
+      <div class="nav-item" onclick="switchWorkspace('signal_import')"><span class="nav-icon">📥</span> Signal Import</div>
+
+      <div class="nav-section-title">SIGNAL PROCESSING</div>
+      <div class="nav-item" onclick="switchWorkspace('eeg_viewer')"><span class="nav-icon">📈</span> EEG Viewer</div>
+      <div class="nav-item" onclick="switchWorkspace('signal_quality')"><span class="nav-icon">🛡️</span> Signal Quality (SQI)</div>
+      <div class="nav-item" onclick="switchWorkspace('preprocessing')"><span class="nav-icon">🛠️</span> Preprocessing Builder</div>
+      <div class="nav-item" onclick="switchWorkspace('artifact_analysis')"><span class="nav-icon">🔍</span> Artifact Analysis</div>
+      <div class="nav-item" onclick="switchWorkspace('window_config')"><span class="nav-icon">⏱️</span> Windowing Engine</div>
+
+      <div class="nav-section-title">ANALYSIS & RESEARCH</div>
+      <div class="nav-item" onclick="switchWorkspace('feature_extraction')"><span class="nav-icon">🔢</span> Feature Extraction</div>
+      <div class="nav-item" onclick="switchWorkspace('frequency_analysis')"><span class="nav-icon">🌊</span> Frequency Analysis</div>
+      <div class="nav-item" onclick="switchWorkspace('attention_analysis')"><span class="nav-icon">🎯</span> Attention Analysis</div>
+      <div class="nav-item" onclick="switchWorkspace('statistical_analysis')"><span class="nav-icon">📉</span> Statistical Analysis</div>
+      <div class="nav-item" onclick="switchWorkspace('ablation_study')"><span class="nav-icon">🔬</span> Ablation Study Workspace</div>
+      <div class="nav-item" onclick="switchWorkspace('research_validation')"><span class="nav-icon">⚖️</span> Research Validation</div>
+
+      <div class="nav-section-title">SYSTEM & REPORTS</div>
+      <div class="nav-item" onclick="switchWorkspace('visualization')"><span class="nav-icon">🖼️</span> Visualization Gallery</div>
+      <div class="nav-item" onclick="switchWorkspace('experiment_manager')"><span class="nav-icon">💾</span> Experiment Manager</div>
+      <div class="nav-item" onclick="switchWorkspace('reports')"><span class="nav-icon">📄</span> Report Center</div>
+      <div class="nav-item" onclick="switchWorkspace('settings')"><span class="nav-icon">⚙️</span> Settings</div>
+      <div class="nav-item" onclick="switchWorkspace('help_about')"><span class="nav-icon">❓</span> Help & About</div>
+    </aside>
+
+    <!-- MAIN WORKSPACE CANVAS -->
+    <main id="main-workspace">
+      <!-- Dynamic Workspace Views Render Here -->
+      <div id="workspace-content"></div>
+    </main>
+
+    <!-- RIGHT ANALYSIS PANEL -->
+    <aside id="right-panel">
+      <h3 style="font-size: 13px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px;">Live Channel Inspector</h3>
+      <div id="channel-inspector-content">
+        <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 8px;">Active Channels (13 System):</div>
+        <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px;">
+          <span class="status-badge">Fp1</span><span class="status-badge">Fp2</span>
+          <span class="status-badge">F3</span><span class="status-badge">F4</span>
+          <span class="status-badge">C3</span><span class="status-badge">C4</span>
+          <span class="status-badge">P3</span><span class="status-badge">P4</span>
+          <span class="status-badge">O1</span><span class="status-badge">O2</span>
+          <span class="status-badge">Fz</span><span class="status-badge">Cz</span>
+          <span class="status-badge">Pz</span>
+        </div>
+
+        <h4 style="font-size: 12px; color: var(--text-primary); margin-bottom: 8px;">Active Formula:</h4>
+        <div style="background: rgba(0,0,0,0.3); padding: 8px; border-radius: 4px; font-family: var(--font-mono); font-size: 11px; color: var(--accent-cyan);">
+          beta / theta
+        </div>
+
+        <h4 style="font-size: 12px; color: var(--text-primary); margin-top: 16px; margin-bottom: 8px;">Band Power Distribution:</h4>
+        <div style="font-size: 11px; color: var(--text-secondary);">
+          <div>Delta (0.5-4Hz): <strong style="color: var(--band-delta);">8.4%</strong></div>
+          <div>Theta (4-8Hz): <strong style="color: var(--band-theta);">12.1%</strong></div>
+          <div>Alpha (8-13Hz): <strong style="color: var(--band-alpha);">18.2%</strong></div>
+          <div>Beta (13-30Hz): <strong style="color: var(--band-beta);">45.6%</strong></div>
+          <div>Gamma (30-40Hz): <strong style="color: var(--band-gamma);">15.7%</strong></div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- BOTTOM STATUS CONSOLE -->
+    <footer id="bottom-console">
+      <div id="log-console-text">
+        [13:45:44] SYSTEM READY | Signal Quality Audit: 13/13 Channels Passed (95.4%) | Mode: Non-ML BSP
+      </div>
+      <div>
+        CPU: <span style="color: var(--accent-cyan);">2.4%</span> | RAM: <span style="color: var(--accent-cyan);">142 MB</span> | Telemetry: <span style="color: var(--success-green);">Stable</span>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- JavaScript Controllers -->
+  <script src="js/app.js"></script>
+  <script src="js/eeg_canvas.js"></script>
+  <script src="js/pipeline_builder.js"></script>
+  <script src="js/ablation_workspace.js"></script>
+  <script src="js/stats_workspace.js"></script>
+  <script src="js/report_previewer.js"></script>
+</body>
+</html>

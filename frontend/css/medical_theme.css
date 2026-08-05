@@ -1,0 +1,72 @@
+/* NeuroLearn Research Suite - Medical Dark Design System */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+  /* Color Tokens */
+  --bg-dark: #0a192f;
+  --panel-bg: #172a45;
+  --card-bg: #172a45;
+  --card-border: #233554;
+  --text-primary: #e6f1ff;
+  --text-secondary: #8892b0;
+  --text-muted: #64748b;
+  
+  /* Accent Colors */
+  --accent-cyan: #64ffda;
+  --accent-blue: #00d2ff;
+  --medical-blue: #0052cc;
+  --warning-amber: #ffb703;
+  --error-red: #ff4d4d;
+  --success-green: #00e676;
+  
+  /* Frequency Band Colors */
+  --band-delta: #9b59b6;
+  --band-theta: #3498db;
+  --band-alpha: #2ecc71;
+  --band-beta: #e67e22;
+  --band-gamma: #e74c3c;
+
+  /* Typography */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Transitions & Shadows */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.25s ease;
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  --glass-border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-dark);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.5;
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+  user-select: none;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-dark);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--card-border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-blue);
+}
