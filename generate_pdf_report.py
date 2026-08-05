@@ -1,7 +1,7 @@
 """
 Comprehensive IEEE / Frontiers Style PDF Report Generator for NeuroLearn Research Suite.
-Compiles all platform architecture, features, mathematical derivations, ablation studies,
-validation results, and operational guides into a publication-ready PDF report.
+Processes real-world PhysioNet EEG data (Subject 1, Runs 1 & 2: Baseline Eyes Open vs Task)
+and compiles all platform architecture, real signal metrics, ablation studies, and mathematical derivations.
 """
 
 import os
@@ -10,18 +10,67 @@ import time
 import numpy as np
 import pandas as pd
 
+from data.physionet import PhysioNetManager
+from preprocessing.cleaner import EEGPreprocessor
+from preprocessing.quality import SignalQualityAssessment
+from segmentation.windowing import EEGSegmenter
+from features.extractor import FeatureExtractionEngine
+from attention.calculator import AttentionCalculator
+from stats.analyzer import StatisticalAnalyzer
+from ablation.engine import AblationEngine
+
+# ReportLab Imports
 from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
 from reportlab.platypus import (
-    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, HRFlowable, KeepTogether
+    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, HRFlowable
 )
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_JUSTIFY
 
 
 def build_full_project_pdf(output_filename: str = "NeuroLearn_Research_Suite_Full_Project_Report.pdf") -> str:
-    """Generate comprehensive multi-page IEEE-style PDF research project report."""
+    """Generate comprehensive multi-page IEEE-style PDF research project report using real PhysioNet data."""
 
+    print("Loading real-world PhysioNet EEG dataset (Subject 1, Runs 1 & 2)...")
+    # Load Real PhysioNet Subject 1: Run 1 (Eyes Open) & Run 2 (Eyes Closed/Task)
+    pn_data_run1 = PhysioNetManager.load_physionet_subject(subject_id=1, runs=[1])
+    pn_data_run2 = PhysioNetManager.load_physionet_subject(subject_id=1, runs=[2])
+
+    # 1. Real Signal Quality Audit
+    sqa = SignalQualityAssessment()
+    sqi_run1 = sqa.evaluate(pn_data_run1)
+
+    # 2. Real Preprocessing
+    cleaner = EEGPreprocessor(lowcut=1.0, highcut=40.0, notch_freq=50.0, normalization="zscore")
+    clean_run1, preproc_log = cleaner.process(pn_data_run1)
+    clean_run2, _ = cleaner.process(pn_data_run2)
+
+    # 3. Real Epoch Windowing
+    segmenter = EEGSegmenter(window_sec=5.0, overlap_ratio=0.5)
+    epochs_run1 = segmenter.segment(clean_run1)
+    epochs_run2 = segmenter.segment(clean_run2)
+
+    # 4. Real Feature Extraction & Attention Calculation
+    fe = FeatureExtractionEngine(psd_method="welch")
+    feat_run1 = fe.extract_features(epochs_run1)
+    feat_run2 = fe.extract_features(epochs_run2)
+
+    calc = AttentionCalculator(formula_str="beta / theta")
+    att_run1, summary_run1 = calc.compute_attention(feat_run1)
+    att_run2, summary_run2 = calc.compute_attention(feat_run2)
+
+    # 5. Real Statistical & Bland-Altman Comparison
+    scores_r1 = att_run1["attention_score"].values
+    scores_r2 = att_run2["attention_score"].values
+    stat_comp = StatisticalAnalyzer.compare_groups(scores_r1, scores_r2, group1_name="Run 1 (Baseline)", group2_name="Run 2 (Task)")
+    ba_res = StatisticalAnalyzer.bland_altman(scores_r1, scores_r2)
+
+    # 6. Real Ablation Study on PhysioNet Signal
+    ablation_eng = AblationEngine(pn_data_run1)
+    df_ablation = ablation_eng.run_preprocessing_ablation()
+
+    # Create ReportLab Document
     output_path = os.path.join(os.getcwd(), output_filename)
     doc = SimpleDocTemplate(
         output_path,
@@ -44,8 +93,8 @@ def build_full_project_pdf(output_filename: str = "NeuroLearn_Research_Suite_Ful
         "DocTitle",
         parent=styles["Title"],
         fontName="Helvetica-Bold",
-        fontSize=22,
-        leading=26,
+        fontSize=21,
+        leading=25,
         textColor=c_primary,
         alignment=TA_CENTER
     )
@@ -71,8 +120,8 @@ def build_full_project_pdf(output_filename: str = "NeuroLearn_Research_Suite_Ful
         "SectionH1",
         parent=styles["Heading1"],
         fontName="Helvetica-Bold",
-        fontSize=14,
-        leading=18,
+        fontSize=13,
+        leading=17,
         textColor=c_secondary,
         spaceBefore=14,
         spaceAfter=6
@@ -105,14 +154,6 @@ def build_full_project_pdf(output_filename: str = "NeuroLearn_Research_Suite_Ful
         textColor=colors.HexColor("#1e293b"),
         leftIndent=15
     )
-    code_style = ParagraphStyle(
-        "CodeCustom",
-        parent=styles["Normal"],
-        fontName="Courier",
-        fontSize=8,
-        leading=11,
-        textColor=colors.HexColor("#0f172a")
-    )
 
     story = []
 
@@ -121,24 +162,24 @@ def build_full_project_pdf(output_filename: str = "NeuroLearn_Research_Suite_Ful
     # ==========================================
     story.append(Paragraph("NeuroLearn Research Suite (NEURO_FOCUS)", title_style))
     story.append(Spacer(1, 4))
-    story.append(Paragraph("Comprehensive Technical & Research Platform Project Report", subtitle_style))
+    story.append(Paragraph("Real-World PhysioNet EEG Technical & Research Project Report", subtitle_style))
     story.append(Paragraph("A Modular Biomedical Signal Processing (BSP) Platform for EEG-Based Attention Quantification", meta_style))
     story.append(Spacer(1, 8))
     story.append(HRFlowable(width="100%", thickness=2, color=c_secondary, spaceAfter=12))
 
-    # Metadata Table
+    # Metadata Table with REAL Data Info
     meta_table_data = [
         [
-            Paragraph("<b>Platform Version:</b> 1.0.0 (Research Edition)", body_style),
+            Paragraph(f"<b>Primary Dataset:</b> {pn_data_run1.subject_id} (eegmmidb)", body_style),
             Paragraph("<b>Methodology:</b> 100% Non-ML / Explainable BSP", body_style)
         ],
         [
-            Paragraph("<b>Institution:</b> Biomedical Engineering Laboratory", body_style),
-            Paragraph("<b>GitHub Repository:</b> 60140-Ikrama/NEURO_FOCUS", body_style)
+            Paragraph(f"<b>Sampling Rate (fs):</b> {pn_data_run1.sampling_rate} Hz", body_style),
+            Paragraph(f"<b>Channel Count:</b> {pn_data_run1.n_channels} Channels", body_style)
         ],
         [
-            Paragraph(f"<b>Report Date:</b> {time.strftime('%B %d, %Y')}", body_style),
-            Paragraph("<b>Verification Status:</b> 11/11 Pytest Suite Passed", body_style)
+            Paragraph(f"<b>Recording Duration:</b> {pn_data_run1.duration_sec:.1f} Seconds", body_style),
+            Paragraph(f"<b>Real Quality Audit:</b> {sqi_run1['overall_sqi']}% SQI Score", body_style)
         ]
     ]
     t_meta = Table(meta_table_data, colWidths=[270, 270])
@@ -154,197 +195,135 @@ def build_full_project_pdf(output_filename: str = "NeuroLearn_Research_Suite_Ful
     # ==========================================
     # SECTION 1: EXECUTIVE SUMMARY & PHILOSOPHY
     # ==========================================
-    story.append(Paragraph("1. Executive Summary & Research Philosophy", h1_style))
+    story.append(Paragraph("1. Executive Summary & Real-World Dataset Validation", h1_style))
     p1 = (
-        "The <b>NeuroLearn Research Suite</b> is a research-grade Biomedical Signal Processing (BSP) platform "
-        "engineered for biomedical engineering laboratories, universities, graduate thesis research, and clinical investigation. "
-        "The system objectively measures student attention state directly from multi-channel EEG recordings."
+        f"This report presents an empirical biomedical signal processing study evaluating student cognitive state "
+        f"derived directly from the <b>PhysioNet EEG Motor Movement/Imagery Database (eegmmidb)</b>. "
+        f"The primary dataset consists of 64-channel EEG recordings sampled at {pn_data_run1.sampling_rate} Hz from {pn_data_run1.subject_id} "
+        f"encompassing both resting baseline (Run 1) and active task conditions (Run 2)."
     )
     story.append(Paragraph(p1, body_style))
     story.append(Spacer(1, 6))
 
     p2 = (
-        "<b>Strict Non-ML Methodology Policy:</b> In contrast to conventional black-box artificial intelligence systems, "
-        "this platform explicitly <b>does NOT use neural networks, CNNs, LSTMs, Transformers, or deep learning models</b>. "
-        "Every cognitive metric is derived transparently using zero-phase Butterworth filtering, Welch Power Spectral Density (PSD), "
-        "Hjorth parameters, Discrete Wavelet Transforms (DWT), and mathematical neurophysiological ratio formulations "
-        "(such as Beta/Theta and (Beta+Gamma)/(Theta+Alpha)). The design prioritizes 100% scientific validity, explainability, "
-        "and reproducible research."
+        "<b>Strict Non-ML Policy:</b> In accordance with rigorous scientific standards, <b>zero machine learning or black-box predictive models</b> "
+        "were used. All attention metrics were computed using zero-phase Butterworth bandpass filtering (1-40 Hz), 50 Hz powerline notch filtering, "
+        "Welch Power Spectral Density (PSD), Hjorth parameters (Activity, Mobility, Complexity), and mathematical band ratio formulations (Beta/Theta)."
     )
     story.append(Paragraph(p2, body_style))
     story.append(Spacer(1, 12))
 
     # ==========================================
-    # SECTION 2: 17 CORE MODULAR BACKEND ARCHITECTURE
+    # SECTION 2: REAL-WORLD SIGNAL QUALITY & PREPROCESSING AUDIT
     # ==========================================
-    story.append(Paragraph("2. Core Modular Architecture & Subsystems", h1_style))
-    story.append(Paragraph("The backend architecture comprises 17 fully decoupled, object-oriented research modules:", body_style))
-    story.append(Spacer(1, 6))
+    story.append(Paragraph("2. Real-World Signal Quality & Preprocessing Audit", h1_style))
 
-    modules_info = [
-        ("1. Dataset Manager", "Parses EDF, MAT, CSV, and TXT recordings with automatic metadata detection (sampling rate fs, channel labels, duration, units)."),
-        ("2. Biopac Import Manager", "Normalizes AcqKnowledge MAT/CSV exports into standard EEGData containers without modifying downstream processing."),
-        ("3. PhysioNet Adapter", "Fetches and formats public PhysioNet EEG Motor Movement/Imagery datasets (eegmmidb)."),
-        ("4. Signal Quality Assessment (SQI)", "Computes Signal Quality Index (0-100%), SNR (dB), kurtosis artifact contamination, flatline channels, and auto-excludes bad channels."),
-        ("5. Signal Preprocessing Cleaner", "Executes zero-phase Butterworth Bandpass (1-40Hz), 50Hz/60Hz Notch filter, baseline detrending, and Z-score/Min-Max standardization."),
-        ("6. Sliding Window Engine", "Segments continuous EEG into sliding epochs (2s, 5s, 10s, 20s, 30s) with configurable overlap (0% to 90%)."),
-        ("7. Feature Extraction Engine", "Extracts time domain stats, Hjorth parameters, Welch/Multitaper PSD, SEF95, Spectral Entropy, and Wavelet Entropy."),
-        ("8. Frequency Analysis Subsystem", "Calculates absolute and relative band powers for Delta (0.5-4Hz), Theta (4-8Hz), Alpha (8-13Hz), Beta (13-30Hz), and Gamma (30-40Hz)."),
-        ("9. Mathematical Attention Calculator", "Computes non-ML ratio formulas, AST safe user expressions, 0-100 normalization, and 5-level rule-based state classification."),
-        ("10. Statistical Analysis Module", "Performs parametric/non-parametric hypothesis testing, Shapiro-Wilk normality tests, Cohen's d effect sizes, and Bland-Altman agreement."),
-        ("11. Systematic Ablation Study Engine", "Primary research module systematically evaluating Preprocessing pipelines, Window sizes, PSD methods, and Attention formulas."),
-        ("12. Research Validation Engine", "Direct cross-dataset agreement audit between PhysioNet and Biopac EEG sessions."),
-        ("13. Experiment Manager & Reproducibility", "Logs software versions, filter bounds, data hashes, and exports 100% reproducible JSON state snapshots."),
-        ("14. Plugin Architecture Manager", "Dynamic registry for custom signal filters, feature extractors, and attention index formulations."),
-        ("15. Multi-Format Report Generator", "Exports IEEE/Frontiers-styled PDF, Word DOCX, and CSV dataset reports."),
-        ("16. Configuration Manager", "Centralized YAML/JSON configuration manager."),
-        ("17. Visualization Engine", "Generates high-resolution Plotly medical dark theme interactive charts.")
-    ]
-
-    for m_name, m_desc in modules_info:
-        story.append(Paragraph(f"• <b>{m_name}:</b> {m_desc}", bullet_style))
-        story.append(Spacer(1, 2))
-
+    sqi_text = (
+        f"<b>PhysioNet Dataset SQI Audit Score:</b> {sqi_run1['overall_sqi']}%<br/>"
+        f"<b>Signal-to-Noise Ratio (SNR):</b> Mean SNR = {np.mean(list(sqi_run1['channel_snr_db'].values())):.2f} dB<br/>"
+        f"<b>Excluded Channels:</b> {', '.join(sqi_run1['bad_channels']) if sqi_run1['bad_channels'] else 'None (All 64 channels passed quality threshold)'}<br/>"
+        f"<b>Preprocessing Settings:</b> 1.0 - 40.0 Hz 4th Order Zero-Phase Butterworth Bandpass + 50.0 Hz Notch Filter + Linear Detrending + Z-Score Standardization."
+    )
+    story.append(Paragraph(sqi_text, body_style))
     story.append(Spacer(1, 10))
 
     # ==========================================
-    # SECTION 3: DESKTOP SCIENTIFIC FRONTEND
+    # SECTION 3: REAL ATTENTION ANALYSIS RESULTS
     # ==========================================
-    story.append(Paragraph("3. Desktop Scientific Research Frontend & 21 Workspaces", h1_style))
-    p_front = (
-        "The frontend application provides a desktop-first scientific interface styled after professional biomedical "
-        "software such as MATLAB App Designer, LabChart, Biopac AcqKnowledge, BrainVision Analyzer, and OpenBCI GUI. "
-        "It features a dark medical theme (#0a192f background, #172a45 glassmorphic cards, #00d2ff cyan, #0052cc medical blue)."
-    )
-    story.append(Paragraph(p_front, body_style))
-    story.append(Spacer(1, 6))
+    story.append(Paragraph("3. Empirical Attention Analysis (Baseline vs. Task)", h1_style))
 
-    ws_data = [
-        ["Workspace Category", "Included Interactive Views"],
-        ["Data Management", "Dashboard, Dataset Manager, Biopac Manager, PhysioNet Manager, Signal Import"],
-        ["Signal Processing", "EEG Signal Viewer, Signal Quality (SQI), Preprocessing Builder, Artifact Analysis, Window Config"],
-        ["Analysis & Research", "Feature Extraction, Frequency Analysis, Attention Analysis, Statistical Analysis, Ablation Study, Research Validation"],
-        ["System & Reports", "Visualization Gallery, Experiment Manager, Report Center, Settings, Help & About"]
+    att_data = [
+        ["Metric", "Run 1 (Baseline)", "Run 2 (Task)", "Scientific Significance"],
+        ["Average Attention Score", f"{summary_run1['average_attention']:.1f} / 100", f"{summary_run2['average_attention']:.1f} / 100", "Mean cognitive score"],
+        ["Peak Attention Score", f"{summary_run1['peak_attention']:.1f} / 100", f"{summary_run2['peak_attention']:.1f} / 100", "Maximum observed focused state"],
+        ["Minimum Attention Score", f"{summary_run1['minimum_attention']:.1f} / 100", f"{summary_run2['minimum_attention']:.1f} / 100", "Nadir attention level"],
+        ["Attention Stability Index", f"{summary_run1['stability_index']:.1f}%", f"{summary_run2['stability_index']:.1f}%", "Inverse standard deviation"],
+        ["Dominant Category", str(summary_run1['dominant_category']), str(summary_run2['dominant_category']), "5-Level rule-based state"]
     ]
-    t_ws = Table(ws_data, colWidths=[160, 380])
-    t_ws.setStyle(TableStyle([
+    t_att = Table(att_data, colWidths=[140, 110, 110, 180])
+    t_att.setStyle(TableStyle([
         ("BACKGROUND", (0,0), (-1,0), c_secondary),
         ("TEXTCOLOR", (0,0), (-1,0), colors.white),
         ("FONTNAME", (0,0), (-1,0), "Helvetica-Bold"),
         ("GRID", (0,0), (-1,-1), 0.5, c_border),
         ("PADDING", (0,0), (-1,-1), 5),
     ]))
-    story.append(t_ws)
+    story.append(t_att)
     story.append(Spacer(1, 12))
 
-    # Page Break for Mathematical Derivations & Ablation Results
+    # ==========================================
+    # SECTION 4: STATISTICAL & BLAND-ALTMAN RESULTS
+    # ==========================================
+    story.append(Paragraph("4. Statistical Hypothesis Testing & Bland-Altman Agreement", h1_style))
+
+    p_stat = (
+        f"<b>Hypothesis Test:</b> {stat_comp['test_name']}<br/>"
+        f"<b>Test Statistic:</b> {stat_comp['statistic']:.3f} (p-value = {stat_comp['p_value']:.4f})<br/>"
+        f"<b>Cohen's d Effect Size:</b> d = {stat_comp['cohens_d']:.2f}<br/>"
+        f"<b>Bland-Altman Agreement:</b> Mean Bias = {ba_res['mean_difference']:.2f} points, "
+        f"95% Limits of Agreement = [{ba_res['loa_lower_95']:.2f}, {ba_res['loa_upper_95']:.2f}], Pearson r = {ba_res['pearson_r']:.3f}."
+    )
+    story.append(Paragraph(p_stat, body_style))
+    story.append(Spacer(1, 10))
+
     story.append(PageBreak())
 
     # ==========================================
-    # SECTION 4: FULL MATHEMATICAL DERIVATIONS
+    # SECTION 5: REAL ABLATION STUDY RESULTS
     # ==========================================
-    story.append(Paragraph("4. Mathematical Equations & Biomedical Derivations", h1_style))
-
-    story.append(Paragraph("4.1 Zero-Phase Butterworth Bandpass & Notch Filtering", h2_style))
-    p_math1 = (
-        "Magnitude response of 4th-order Butterworth bandpass filter (1-40 Hz):<br/>"
-        "<b>|H(jw)|^2 = 1 / [ 1 + ((w^2 - w0^2) / (w * B))^(2N) ]</b><br/>"
-        "Zero-phase forward-backward filtering ensures zero phase distortion across frequencies."
-    )
-    story.append(Paragraph(p_math1, body_style))
+    story.append(Paragraph("5. Real-World Systematic Ablation Study Results", h1_style))
+    story.append(Paragraph("Systematic evaluation of Preprocessing Pipeline configurations executed directly on the PhysioNet dataset:", body_style))
     story.append(Spacer(1, 6))
 
-    story.append(Paragraph("4.2 Hjorth Time-Domain Parameters", h2_style))
-    p_hjorth = (
-        "• <b>Activity:</b> var(x(t)) = sigma_x^2<br/>"
-        "• <b>Mobility:</b> sqrt( var(dx/dt) / var(x(t)) ) = sigma_x' / sigma_x<br/>"
-        "• <b>Complexity:</b> Mobility(dx/dt) / Mobility(x(t))"
-    )
-    story.append(Paragraph(p_hjorth, body_style))
-    story.append(Spacer(1, 6))
+    ab_rows = [["Preprocessing Pipeline", "Mean Attention", "Peak Attention", "Stability Index", "Dominant Category"]]
+    for idx, r in df_ablation.iterrows():
+        ab_rows.append([
+            str(r["Configuration"]),
+            f"{r['Mean Attention']:.1f} / 100",
+            f"{r['Peak Attention']:.1f}",
+            f"{r['Stability Index']:.1f}%",
+            str(r["Dominant Category"])
+        ])
 
-    story.append(Paragraph("4.3 Spectral & Wavelet Metrics", h2_style))
-    p_spec = (
-        "• <b>Welch PSD:</b> PSD(f) = (1/K) sum_{k=1}^K |FFT(x_k * w)|^2 / (L * U)<br/>"
-        "• <b>Spectral Edge Frequency (SEF95):</b> Integral_0^{f95} PSD(f) df = 0.95 * Total_Power<br/>"
-        "• <b>Spectral Entropy:</b> H_s = - sum ( p(f_i) * log2(p(f_i)) ) / log2(M)<br/>"
-        "• <b>Wavelet Entropy:</b> H_wavelet = - sum ( p_j * log2(p_j) ) using DWT coefficients"
-    )
-    story.append(Paragraph(p_spec, body_style))
-    story.append(Spacer(1, 6))
-
-    story.append(Paragraph("4.4 Attention Indices & Sigmoidal 0-100 Normalization", h2_style))
-    p_att = (
-        "• <b>Classic Engagement Index:</b> I_1 = Beta / Theta = Power(13-30Hz) / Power(4-8Hz)<br/>"
-        "• <b>Extended Attention Index:</b> I_2 = (Beta + Gamma) / (Theta + Alpha)<br/>"
-        "• <b>Sigmoidal Normalization:</b> Score = 100 / [ 1 + exp( -(I - median(I)) / (std(I) + eps) ) ]"
-    )
-    story.append(Paragraph(p_att, body_style))
-    story.append(Spacer(1, 6))
-
-    story.append(Paragraph("4.5 Cohen's d Effect Size & Bland-Altman Agreement", h2_style))
-    p_stat = (
-        "• <b>Cohen's d:</b> d = (Mean_1 - Mean_2) / s_pooled<br/>"
-        "• <b>Bland-Altman Limits of Agreement (95%):</b> Mean_Bias +/- 1.96 * SD_diff"
-    )
-    story.append(Paragraph(p_stat, body_style))
-    story.append(Spacer(1, 12))
-
-    # ==========================================
-    # SECTION 5: ABLATION STUDY & VALIDATION RESULTS
-    # ==========================================
-    story.append(Paragraph("5. Systematic Ablation Study & Research Validation Results", h1_style))
-    story.append(Paragraph("Quantitative ablation evaluation across preprocessing pipelines on sample EEG recordings:", body_style))
-    story.append(Spacer(1, 6))
-
-    ab_table_data = [
-        ["Preprocessing Pipeline", "Mean Attention", "Peak Attention", "Stability Index", "Status"],
-        ["Full Pipeline (Bandpass + Notch + Z-Score)", "78.4 / 100", "92.1", "89.2%", "Optimal Config"],
-        ["Bandpass + Notch Only", "74.2 / 100", "88.4", "82.1%", "Acceptable"],
-        ["Bandpass Only", "69.1 / 100", "84.5", "75.4%", "Sub-optimal"],
-        ["Raw Signal (Unfiltered)", "58.2 / 100", "98.5", "42.1%", "Noisy / Baseline Drift"]
-    ]
-    t_ab = Table(ab_table_data, colWidths=[190, 85, 80, 85, 100])
+    t_ab = Table(ab_rows, colWidths=[190, 85, 80, 85, 100])
     t_ab.setStyle(TableStyle([
         ("BACKGROUND", (0,0), (-1,0), c_accent),
         ("TEXTCOLOR", (0,0), (-1,0), colors.white),
         ("FONTNAME", (0,0), (-1,0), "Helvetica-Bold"),
         ("GRID", (0,0), (-1,-1), 0.5, c_border),
         ("PADDING", (0,0), (-1,-1), 5),
-        ("BACKGROUND", (0,1), (-1,1), colors.HexColor("#e6f4f1")),
     ]))
     story.append(t_ab)
-    story.append(Spacer(1, 10))
-
-    story.append(Paragraph("<b>Cross-Dataset Validation (PhysioNet vs. Biopac):</b>", h2_style))
-    p_val = (
-        "Direct agreement analysis yielded strong cross-hardware correlation (Pearson r = 0.892, p < 0.001). "
-        "Bland-Altman mean bias was +1.20 points with 95% limits of agreement [-4.68, +7.08], confirming high consistency."
-    )
-    story.append(Paragraph(p_val, body_style))
     story.append(Spacer(1, 12))
 
     # ==========================================
-    # SECTION 6: DISCUSSION, LIMITATIONS & REFERENCES
+    # SECTION 6: MATHEMATICAL FORMULATIONS & REFERENCES
     # ==========================================
-    story.append(Paragraph("6. Discussion, Limitations & Academic References", h1_style))
-    p_disc = (
-        "<b>Discussion:</b> The mathematical attention indices provide clear, explainable spectral separation between "
-        "focused and resting states. High Beta/Theta ratios correspond directly to active cognitive processing.<br/>"
-        "<b>Limitations:</b> Ocular blink artifacts can occasionally contaminate frontal channels (Fp1, Fp2). Automated SQI "
-        "effectively flags these intervals.<br/>"
-        "<b>References:</b><br/>"
-        "1. Coelli, S., et al. (2018). 'EEG-based indices of attention during online learning tasks.' <i>IEEE TBME</i>.<br/>"
-        "2. Hjorth, B. (1970). 'EEG analysis based on time domain properties.' <i>Electroenceph. Clin. Neurophysiol.</i><br/>"
-        "3. Welch, P. (1967). 'The use of fast Fourier transform for the estimation of power spectra.' <i>IEEE Trans. Audio Electroacoust.</i>"
+    story.append(Paragraph("6. Mathematical Equations & Academic References", h1_style))
+    p_math = (
+        "• <b>4th Order Zero-Phase Butterworth Bandpass:</b> |H(jw)|^2 = 1 / [ 1 + ((w^2 - w0^2)/(w*B))^(2N) ]<br/>"
+        "• <b>Hjorth Activity:</b> var(x(t)) = sigma_x^2 | <b>Mobility:</b> sigma_x' / sigma_x | <b>Complexity:</b> Mobility(dx/dt) / Mobility(x(t))<br/>"
+        "• <b>Welch PSD:</b> PSD(f) = (1/K) sum_{k=1}^K |FFT(x_k * w)|^2 / (L * U)<br/>"
+        "• <b>Spectral Edge Frequency (SEF95):</b> Integral_0^{f95} PSD(f) df = 0.95 * Total_Power<br/>"
+        "• <b>Attention Ratio:</b> Beta / Theta = Power(13-30Hz) / Power(4-8Hz)<br/>"
+        "• <b>Cohen's d:</b> d = (Mean_1 - Mean_2) / s_pooled"
     )
-    story.append(Paragraph(p_disc, body_style))
+    story.append(Paragraph(p_math, body_style))
+    story.append(Spacer(1, 10))
+
+    story.append(Paragraph("<b>Academic References:</b>", h2_style))
+    refs = (
+        "1. Goldberger, A. L., et al. (2000). 'PhysioBank, PhysioToolkit, and PhysioNet: Components of a new research resource for complex physiologic signals.' <i>Circulation</i>, 101(23), e215-e220.<br/>"
+        "2. Coelli, S., et al. (2018). 'EEG-based indices of attention during online learning tasks.' <i>IEEE Transactions on Biomedical Engineering</i>.<br/>"
+        "3. Hjorth, B. (1970). 'EEG analysis based on time domain properties.' <i>Electroencephalography and Clinical Neurophysiology</i>."
+    )
+    story.append(Paragraph(refs, body_style))
 
     # Build Document
     doc.build(story)
+    print(f"Full Project PDF Report successfully generated at: {output_path}")
     return output_path
 
 
 if __name__ == "__main__":
     path = build_full_project_pdf()
-    print(f"Full Project PDF Report successfully generated at: {path}")

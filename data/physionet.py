@@ -28,7 +28,7 @@ class PhysioNetManager:
         """
         logger.info(f"Fetching PhysioNet EEG dataset (Subject {subject_id}, Runs {runs})...")
         try:
-            edf_paths = mne.datasets.eegmmidb.load_data(subject_id, runs, verbose=False)
+            edf_paths = mne.datasets.eegbci.load_data(subject_id, runs, verbose=False, update_path=False)
             raw = mne.io.read_raw_edf(edf_paths[0], preload=True, verbose=False)
 
             fs = float(raw.info["sfreq"])
