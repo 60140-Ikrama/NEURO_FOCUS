@@ -1,0 +1,84 @@
+# NeuroLearn Research Suite - Default Research Configuration
+platform:
+  name: "NeuroLearn Research Suite"
+  version: "1.0.0"
+  institution: "Biomedical Signal Processing & Neuroscience Laboratory"
+  license: "MIT"
+
+theme:
+  mode: "dark"
+  bg_color: "#0a192f"
+  card_bg: "#172a45"
+  text_color: "#e6f1ff"
+  accent_cyan: "#64ffda"
+  accent_blue: "#00d2ff"
+  medical_blue: "#0052cc"
+  warning_yellow: "#ffb703"
+  danger_red: "#ff4d4d"
+  success_green: "#00e676"
+
+preprocessing:
+  bandpass:
+    lowcut: 1.0
+    highcut: 40.0
+    order: 4
+    type: "butterworth"
+  notch:
+    freq: 50.0
+    quality_factor: 30.0
+  detrend: true
+  dc_offset_removal: true
+  normalization: "zscore"  # choices: "zscore", "minmax", "robust", "none"
+  bad_channel_threshold: 0.3  # SQI below 30% excluded
+
+windowing:
+  default_window_sec: 5.0
+  available_windows: [2.0, 5.0, 10.0, 20.0, 30.0]
+  default_overlap: 0.5  # 50% overlap
+
+bands:
+  delta: [0.5, 4.0]
+  theta: [4.0, 8.0]
+  alpha: [8.0, 13.0]
+  beta: [13.0, 30.0]
+  gamma: [30.0, 40.0]
+
+attention:
+  default_formula: "beta / theta"
+  formulas:
+    beta_theta: "beta / theta"
+    extended_ratio: "(beta + gamma) / (theta + alpha)"
+    composite_index: "(0.6 * beta + 0.4 * gamma) / (0.6 * theta + 0.4 * alpha)"
+    beta_alpha: "beta / alpha"
+    alpha_theta: "alpha / theta"
+  thresholds:
+    very_low: 20.0
+    low: 40.0
+    moderate: 60.0
+    high: 80.0
+    # very_high >= 80.0
+
+psd:
+  method: "welch"  # choices: "welch", "fft", "multitaper"
+  welch_nperseg: 512
+  multitaper_nw: 4
+
+stats:
+  alpha: 0.05
+  confidence_interval: 0.95
+  normality_test: "shapiro"  # choices: "shapiro", "dagostino"
+
+ablation:
+  preprocessing_pipelines:
+    - "raw"
+    - "bandpass"
+    - "bandpass_notch"
+    - "complete"
+  window_sizes: [2.0, 5.0, 10.0, 20.0, 30.0]
+  psd_methods: ["fft", "welch", "multitaper"]
+  feature_groups: ["time", "frequency", "wavelet", "hjorth", "all"]
+
+reports:
+  default_author: "Principal Investigator"
+  organization: "NeuroLearn Research Laboratory"
+  format: "pdf"
