@@ -29,7 +29,6 @@ function toggleSidebar() {
 function switchWorkspace(workspaceId) {
   AppState.activeWorkspace = workspaceId;
 
-  // Update navigation sidebar active state
   document.querySelectorAll('.nav-item').forEach(item => {
     item.classList.remove('active');
   });
@@ -42,7 +41,6 @@ function switchWorkspace(workspaceId) {
   const contentArea = document.getElementById('workspace-content');
   contentArea.innerHTML = '';
 
-  // Render Target Workspace
   switch (workspaceId) {
     case 'dashboard':
       renderDashboard(contentArea);
@@ -103,11 +101,13 @@ function logTelemetry(msg) {
 
 /* WORKSPACE RENDERERS */
 
+/* DASHBOARD 1: EXECUTIVE SCIENTIFIC OVERVIEW */
 function renderDashboard(container) {
   container.innerHTML = `
-    <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 4px;">Research Workspace Dashboard</h2>
-    <p style="color: var(--text-secondary); margin-bottom: 20px;">Overview of Active EEG Signal Recording & Neurophysiological Indices</p>
+    <h2 style="font-size: 22px; font-weight: 800; margin-bottom: 4px;">Executive Scientific Overview (Dashboard 1)</h2>
+    <p style="color: var(--text-secondary); margin-bottom: 20px;">Real-Time Cognitive Attention State, Signal Quality Telemetry, & Band Power Hub</p>
     
+    <!-- ROW 1: 4-COLUMN HERO KPI CARDS -->
     <div class="kpi-grid">
       <div class="kpi-card">
         <div class="kpi-title">Signal Quality Index</div>
@@ -127,24 +127,105 @@ function renderDashboard(container) {
       <div class="kpi-card">
         <div class="kpi-title">Acquisition System</div>
         <div class="kpi-value">PhysioNet</div>
-        <div class="kpi-subtext">Sampling Rate: 256 Hz</div>
+        <div class="kpi-subtext">Sampling Rate: ${AppState.dataset.samplingRate} Hz</div>
       </div>
     </div>
 
-    <div style="background: var(--card-bg); border: var(--glass-border); border-radius: 8px; padding: 20px; margin-bottom: 20px;">
-      <h3 style="font-size: 14px; color: var(--accent-cyan); margin-bottom: 12px;">📊 Live Multi-Channel EEG Preview</h3>
-      <div id="plotly-eeg-preview" style="height: 350px;"></div>
+    <!-- ROW 2: 65 / 35 SPLIT LAYOUT -->
+    <div style="display: grid; grid-template-columns: 65% 35%; gap: 20px; margin-bottom: 24px;">
+      <div style="background: var(--card-bg); backdrop-filter: var(--glass-backdrop); border: 1px solid rgba(100, 255, 218, 0.15); border-radius: 12px; padding: 20px;">
+        <h3 style="font-size: 14px; color: var(--accent-cyan); margin-bottom: 12px;">📈 Real-Time Cognitive Attention Timeline</h3>
+        <div id="plotly-att-preview" style="height: 340px;"></div>
+      </div>
+
+      <div style="background: var(--card-bg); backdrop-filter: var(--glass-backdrop); border: 1px solid rgba(100, 255, 218, 0.15); border-radius: 12px; padding: 20px;">
+        <h3 style="font-size: 14px; color: var(--accent-blue); margin-bottom: 12px;">🧠 Band Power Distribution</h3>
+        <div style="display: flex; flex-direction: column; gap: 10px; font-family: var(--font-mono); font-size: 12px; margin-top: 10px;">
+          <div style="display: flex; justify-content: space-between;"><span>Delta (0.5-4 Hz):</span><strong style="color: var(--band-delta);">8.4%</strong></div>
+          <div style="display: flex; justify-content: space-between;"><span>Theta (4-8 Hz):</span><strong style="color: var(--band-theta);">12.1%</strong></div>
+          <div style="display: flex; justify-content: space-between;"><span>Alpha (8-13 Hz):</span><strong style="color: var(--band-alpha);">18.2%</strong></div>
+          <div style="display: flex; justify-content: space-between;"><span>Beta (13-30 Hz):</span><strong style="color: var(--band-beta);">45.6%</strong></div>
+          <div style="display: flex; justify-content: space-between;"><span>Gamma (30-40 Hz):</span><strong style="color: var(--band-gamma);">15.7%</strong></div>
+        </div>
+        <hr style="margin: 14px 0; border-color: rgba(255,255,255,0.1);"/>
+        <div style="font-size: 11px; color: var(--accent-cyan);">Active Formula: <code>beta / theta</code></div>
+      </div>
     </div>
 
-    <div style="background: var(--card-bg); border: var(--glass-border); border-radius: 8px; padding: 20px;">
-      <h3 style="font-size: 14px; color: var(--accent-blue); margin-bottom: 12px;">📈 Attention Timeline Curve</h3>
-      <div id="plotly-att-preview" style="height: 300px;"></div>
+    <!-- ROW 3: PREPROCESSING PIPELINE FLOW -->
+    <div style="background: var(--card-bg); backdrop-filter: var(--glass-backdrop); border: 1px solid rgba(100, 255, 218, 0.15); border-radius: 12px; padding: 20px;">
+      <h3 style="font-size: 14px; color: var(--text-primary); margin-bottom: 14px;">🛠️ Preprocessing Pipeline Sequence</h3>
+      <div class="pipeline-container" style="padding: 10px 0;">
+        <div class="pipeline-node"><div style="font-weight: 700; color: var(--accent-cyan);">1. Raw EEG</div><div style="font-size: 11px; color: var(--text-secondary);">Unfiltered Signal</div></div>
+        <div class="pipeline-arrow">➔</div>
+        <div class="pipeline-node"><div style="font-weight: 700; color: var(--accent-cyan);">2. Bandpass</div><div style="font-size: 11px; color: var(--text-secondary);">1.0 - 40.0 Hz</div></div>
+        <div class="pipeline-arrow">➔</div>
+        <div class="pipeline-node"><div style="font-weight: 700; color: var(--accent-cyan);">3. Notch Filter</div><div style="font-size: 11px; color: var(--text-secondary);">50.0 Hz Powerline</div></div>
+        <div class="pipeline-arrow">➔</div>
+        <div class="pipeline-node"><div style="font-weight: 700; color: var(--accent-cyan);">4. Normalization</div><div style="font-size: 11px; color: var(--text-secondary);">Z-Score Detrend</div></div>
+        <div class="pipeline-arrow">➔</div>
+        <div class="pipeline-node" style="border-color: var(--success-green);"><div style="font-weight: 700; color: var(--success-green);">5. SQI Audit</div><div style="font-size: 11px; color: var(--text-secondary);">13/13 Valid</div></div>
+      </div>
     </div>
   `;
 
   setTimeout(() => {
-    initEEGPlot('plotly-eeg-preview');
     initAttentionTimelinePlot('plotly-att-preview');
+  }, 100);
+}
+
+/* DASHBOARD 2: EEG WAVEFORM HUB & SPECTRAL WORKSPACE */
+function renderEEGViewer(container) {
+  container.innerHTML = `
+    <h2 style="font-size: 22px; font-weight: 800; margin-bottom: 4px;">EEG Waveform Hub & Spectral Workspace (Dashboard 2)</h2>
+    <p style="color: var(--text-secondary); margin-bottom: 20px;">High-Density Multi-Channel Stacked EEG Waveforms, Welch PSD Curves, & Channel Quality Audit</p>
+    
+    <!-- ROW 1: TOP CONTROL BAR -->
+    <div style="display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); border: 1px solid rgba(100, 255, 218, 0.15); border-radius: 12px; padding: 14px 20px; margin-bottom: 20px;">
+      <div style="display: flex; gap: 14px; align-items: center;">
+        <span style="font-size: 12px; color: var(--text-secondary); font-weight: 600;">Display Mode:</span>
+        <button class="sci-btn" onclick="logTelemetry('Filter Mode: Preprocessed')">Preprocessed Filtered</button>
+        <button class="sci-btn outline" onclick="logTelemetry('Filter Mode: Raw')">Raw Unfiltered</button>
+      </div>
+
+      <div style="display: flex; gap: 14px; align-items: center;">
+        <span style="font-size: 12px; color: var(--text-secondary); font-weight: 600;">Window:</span>
+        <button class="sci-btn outline" onclick="logTelemetry('Window: 5s')">5.0s</button>
+        <button class="sci-btn outline" onclick="logTelemetry('Window: 10s')">10.0s</button>
+        <button class="sci-btn outline" onclick="logTelemetry('Window: 30s')">30.0s</button>
+      </div>
+    </div>
+
+    <!-- ROW 2: MULTI-CHANNEL STACKED WAVEFORMS CANVAS -->
+    <div style="background: var(--card-bg); backdrop-filter: var(--glass-backdrop); border: 1px solid rgba(100, 255, 218, 0.15); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+      <div id="plotly-full-eeg" style="height: 480px;"></div>
+    </div>
+
+    <!-- ROW 3: 50 / 50 SPLIT (WELCH PSD CURVES & CHANNEL SQI AUDIT MATRIX) -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+      <div style="background: var(--card-bg); backdrop-filter: var(--glass-backdrop); border: 1px solid rgba(100, 255, 218, 0.15); border-radius: 12px; padding: 20px;">
+        <h3 style="font-size: 14px; color: var(--accent-cyan); margin-bottom: 12px;">🌊 Welch Power Spectral Density (PSD)</h3>
+        <div id="plotly-psd-preview" style="height: 280px;"></div>
+      </div>
+
+      <div style="background: var(--card-bg); backdrop-filter: var(--glass-backdrop); border: 1px solid rgba(100, 255, 218, 0.15); border-radius: 12px; padding: 20px;">
+        <h3 style="font-size: 14px; color: var(--accent-blue); margin-bottom: 12px;">🛡️ Channel Quality Audit Matrix</h3>
+        <table class="sci-table">
+          <tr><th>Channel</th><th>SNR (dB)</th><th>SQI Status</th><th>Artifact Contamination</th></tr>
+          <tr><td>Fp1</td><td>14.2 dB</td><td><span class="status-badge">PASSED</span></td><td>Clean Signal</td></tr>
+          <tr><td>Fp2</td><td>13.8 dB</td><td><span class="status-badge">PASSED</span></td><td>Clean Signal</td></tr>
+          <tr><td>F3</td><td>18.5 dB</td><td><span class="status-badge">PASSED</span></td><td>Clean Signal</td></tr>
+          <tr><td>F4</td><td>17.9 dB</td><td><span class="status-badge">PASSED</span></td><td>Clean Signal</td></tr>
+          <tr><td>C3</td><td>19.1 dB</td><td><span class="status-badge">PASSED</span></td><td>Clean Signal</td></tr>
+          <tr><td>Cz</td><td>21.4 dB</td><td><span class="status-badge">PASSED</span></td><td>Clean Signal</td></tr>
+        </table>
+      </div>
+    </div>
+  `;
+
+  setTimeout(() => {
+    initEEGPlot('plotly-full-eeg');
+    initPSDPlot('plotly-psd-preview');
   }, 100);
 }
 
@@ -203,17 +284,6 @@ function renderPhysioNetManager(container) {
   `;
 }
 
-function renderEEGViewer(container) {
-  container.innerHTML = `
-    <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 4px;">EEG Signal Viewer</h2>
-    <p style="color: var(--text-secondary); margin-bottom: 20px;">Stacked Multi-Channel Waveform Plotter with Zoom, Pan, & Cursor Tools</p>
-    <div style="background: var(--card-bg); border: var(--glass-border); border-radius: 8px; padding: 20px;">
-      <div id="plotly-full-eeg" style="height: 550px;"></div>
-    </div>
-  `;
-  setTimeout(() => initEEGPlot('plotly-full-eeg'), 100);
-}
-
 function renderSignalQuality(container) {
   container.innerHTML = `
     <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 4px;">Signal Quality Index (SQI) Audit</h2>
@@ -225,118 +295,61 @@ function renderSignalQuality(container) {
   setTimeout(() => initSQIChart('plotly-sqi-chart'), 100);
 }
 
-function renderPreprocessingBuilder(container) {
-  container.innerHTML = `
-    <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 4px;">Preprocessing Pipeline Builder</h2>
-    <p style="color: var(--text-secondary); margin-bottom: 20px;">Step-by-Step Filter Sequence & Before vs. After Signal Overlay</p>
-    
-    <div class="pipeline-container">
-      <div class="pipeline-node">
-        <div style="font-weight: 700; color: var(--accent-cyan);">1. Raw EEG</div>
-        <div style="font-size: 11px; color: var(--text-secondary);">Unfiltered Signal</div>
-      </div>
-      <div class="pipeline-arrow">➔</div>
-      <div class="pipeline-node">
-        <div style="font-weight: 700; color: var(--accent-cyan);">2. Bandpass</div>
-        <div style="font-size: 11px; color: var(--text-secondary);">1.0 - 40.0 Hz</div>
-      </div>
-      <div class="pipeline-arrow">➔</div>
-      <div class="pipeline-node">
-        <div style="font-weight: 700; color: var(--accent-cyan);">3. Notch Filter</div>
-        <div style="font-size: 11px; color: var(--text-secondary);">50.0 Hz Powerline</div>
-      </div>
-      <div class="pipeline-arrow">➔</div>
-      <div class="pipeline-node">
-        <div style="font-weight: 700; color: var(--accent-cyan);">4. Detrend & Z-Score</div>
-        <div style="font-size: 11px; color: var(--text-secondary);">Standardized</div>
-      </div>
-    </div>
-  `;
-}
-
 function renderFeatureExtraction(container) {
   container.innerHTML = `
-    <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 4px;">Feature Extraction Table</h2>
-    <p style="color: var(--text-secondary); margin-bottom: 20px;">Time-Domain, Welch PSD, Hjorth Parameters, & Wavelet Energy Metrics</p>
-    <table class="sci-table">
-      <tr><th>Epoch ID</th><th>Start (s)</th><th>Theta Power</th><th>Alpha Power</th><th>Beta Power</th><th>Hjorth Activity</th><th>Hjorth Mobility</th></tr>
-      <tr><td>Epoch 0</td><td>0.0</td><td>12.4</td><td>18.6</td><td>45.2</td><td>24.1</td><td>0.45</td></tr>
-      <tr><td>Epoch 1</td><td>2.5</td><td>11.8</td><td>19.2</td><td>48.1</td><td>25.8</td><td>0.48</td></tr>
-      <tr><td>Epoch 2</td><td>5.0</td><td>10.2</td><td>17.5</td><td>52.4</td><td>28.4</td><td>0.52</td></tr>
-    </table>
+    <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 4px;">Multi-Domain Feature Extraction</h2>
+    <p style="color: var(--text-secondary); margin-bottom: 20px;">Time Domain Stats, Welch PSD, Hjorth Parameters, & Wavelet Entropy</p>
+    <div style="background: var(--card-bg); border: var(--glass-border); border-radius: 8px; padding: 20px;">
+      <table class="sci-table">
+        <tr><th>Epoch</th><th>Hjorth Activity</th><th>Hjorth Mobility</th><th>Hjorth Complexity</th><th>SEF95 (Hz)</th><th>Wavelet Entropy</th></tr>
+        <tr><td>Epoch 1 (0-5s)</td><td>142.5</td><td>0.142</td><td>1.85</td><td>28.4 Hz</td><td>0.842</td></tr>
+        <tr><td>Epoch 2 (5-10s)</td><td>138.2</td><td>0.138</td><td>1.81</td><td>27.9 Hz</td><td>0.835</td></tr>
+        <tr><td>Epoch 3 (10-15s)</td><td>145.1</td><td>0.146</td><td>1.89</td><td>29.1 Hz</td><td>0.851</td></tr>
+      </table>
+    </div>
   `;
 }
 
 function renderFrequencyAnalysis(container) {
   container.innerHTML = `
-    <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 4px;">Frequency Analysis</h2>
-    <p style="color: var(--text-secondary); margin-bottom: 20px;">Power Spectral Density (PSD) Curves & Frequency Band Shading</p>
+    <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 4px;">Frequency Analysis & Power Spectral Density</h2>
+    <p style="color: var(--text-secondary); margin-bottom: 20px;">Welch PSD Curves, Multitaper Spectral Estimation, & Spectrogram Heatmaps</p>
     <div style="background: var(--card-bg); border: var(--glass-border); border-radius: 8px; padding: 20px;">
-      <div id="plotly-psd-chart" style="height: 450px;"></div>
+      <div id="plotly-freq-chart" style="height: 400px;"></div>
     </div>
   `;
-  setTimeout(() => initPSDPlot('plotly-psd-chart'), 100);
+  setTimeout(() => initPSDPlot('plotly-freq-chart'), 100);
 }
 
 function renderAttentionAnalysis(container) {
   container.innerHTML = `
     <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 4px;">Mathematical Attention Analysis</h2>
-    <p style="color: var(--text-secondary); margin-bottom: 20px;">Pure Non-ML Cognitive Index Quantification (0-100 Scale)</p>
+    <p style="color: var(--text-secondary); margin-bottom: 20px;">Non-ML Ratio Formulations, Custom Formula Evaluator, & State Classification</p>
     <div style="background: var(--card-bg); border: var(--glass-border); border-radius: 8px; padding: 20px;">
-      <div id="plotly-att-full" style="height: 450px;"></div>
+      <div id="plotly-att-full" style="height: 400px;"></div>
     </div>
   `;
   setTimeout(() => initAttentionTimelinePlot('plotly-att-full'), 100);
 }
 
-function renderStatisticalAnalysis(container) {
-  renderStatsWorkspace(container);
-}
-
-function renderAblationStudy(container) {
-  renderAblationWorkspace(container);
-}
-
-function renderResearchValidation(container) {
-  container.innerHTML = `
-    <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 4px;">Research Validation Workspace</h2>
-    <p style="color: var(--text-secondary); margin-bottom: 20px;">Cross-Dataset Hardware Agreement Audit (PhysioNet vs. Biopac)</p>
-    <div style="background: var(--card-bg); border: var(--glass-border); border-radius: 8px; padding: 20px;">
-      <div id="plotly-ba-validation" style="height: 400px;"></div>
-    </div>
-  `;
-  setTimeout(() => initBlandAltmanPlot('plotly-ba-validation'), 100);
-}
-
-function renderReportCenter(container) {
-  renderReportPreviewer(container);
-}
-
+function renderStatisticalAnalysis(container) { renderStatsWorkspace(container); }
+function renderAblationStudy(container) { renderAblationWorkspace(container); }
+function renderResearchValidation(container) { renderStatsWorkspace(container); }
+function renderReportCenter(container) { renderReportPreviewer(container); }
 function renderSettings(container) {
   container.innerHTML = `
-    <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 4px;">Platform Settings</h2>
-    <p style="color: var(--text-secondary); margin-bottom: 20px;">Global Configuration Overrides & Filtering Cutoffs</p>
-    <div style="background: var(--card-bg); border: var(--glass-border); padding: 20px; border-radius: 8px;">
-      <label>Bandpass Low Cutoff (Hz):</label><br>
-      <input type="number" value="1.0" style="background: var(--bg-dark); border: 1px solid var(--card-border); color: var(--text-primary); padding: 6px 12px; border-radius: 4px; margin-bottom: 14px;"><br>
-      <label>Bandpass High Cutoff (Hz):</label><br>
-      <input type="number" value="40.0" style="background: var(--bg-dark); border: 1px solid var(--card-border); color: var(--text-primary); padding: 6px 12px; border-radius: 4px; margin-bottom: 14px;"><br>
-      <button class="sci-btn" onclick="alert('Settings saved!')">Save Global Settings</button>
+    <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 4px;">Global System Settings</h2>
+    <p style="color: var(--text-secondary); margin-bottom: 20px;">Configuration Overrides for Sampling Rate, Filter Bounds, & Thresholds</p>
+    <div style="background: var(--card-bg); border: var(--glass-border); border-radius: 8px; padding: 20px;">
+      <label style="display: block; margin-bottom: 6px; font-weight: 600;">Default Bandpass Low Cut (Hz):</label>
+      <input type="number" value="1.0" step="0.5" style="background: var(--bg-dark); border: 1px solid var(--card-border); color: var(--text-primary); padding: 8px 12px; border-radius: 4px; margin-bottom: 14px;">
+      <label style="display: block; margin-bottom: 6px; font-weight: 600;">Default Bandpass High Cut (Hz):</label>
+      <input type="number" value="40.0" step="1.0" style="background: var(--bg-dark); border: 1px solid var(--card-border); color: var(--text-primary); padding: 8px 12px; border-radius: 4px; margin-bottom: 14px;">
+      <br>
+      <button class="sci-btn" onclick="alert('Settings saved!')">Save Configuration Overrides</button>
     </div>
   `;
 }
-
 function renderGenericWorkspace(container, id) {
-  container.innerHTML = `
-    <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 4px;">${id.replace('_', ' ').toUpperCase()}</h2>
-    <p style="color: var(--text-secondary); margin-bottom: 20px;">Research Workspace View</p>
-    <div style="background: var(--card-bg); border: var(--glass-border); padding: 20px; border-radius: 8px;">
-      <p style="color: var(--accent-cyan);">Workspace Module Initialized & Active.</p>
-    </div>
-  `;
+  container.innerHTML = `<h2 style="font-size: 20px; font-weight: 700;">Workspace: ${id}</h2><p style="color: var(--text-secondary);">Module loaded successfully.</p>`;
 }
-
-// Initialize default view on load
-window.addEventListener('DOMContentLoaded', () => {
-  switchWorkspace('dashboard');
-});
