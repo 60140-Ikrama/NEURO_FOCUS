@@ -6,6 +6,7 @@ Generates publication-quality interactive charts with dark medical theme styling
 from typing import List, Dict, Any, Optional
 import numpy as np
 import pandas as pd
+from scipy import signal
 import plotly.graph_objects as go
 import plotly.express as px
 from plotly.subplots import make_subplots
@@ -23,8 +24,8 @@ class VisualizationEngine:
         max_seconds: float = 10.0,
         title: str = "Multi-Channel EEG Recording"
     ) -> go.Figure:
-        """Plot multi-channel EEG signals stacked vertically."""
-        channels = selected_channels or eeg_data.channel_names[:8]
+        """Plot multi-channel EEG signals stacked vertically without overlap."""
+        channels = selected_channels or eeg_data.channel_names[:min(8, eeg_data.n_channels)]
         fs = eeg_data.sampling_rate
         max_samples = int(max_seconds * fs)
         n_samples = min(max_samples, eeg_data.n_samples)
@@ -32,7 +33,7 @@ class VisualizationEngine:
 
         fig = go.Figure()
         offset = 0.0
-        step = 50.0  # uV vertical shift between stacked channels
+        step = 60.0  # uV vertical shift between stacked channels
 
         for i, ch in enumerate(channels):
             if ch in eeg_data.channel_names:
@@ -49,8 +50,9 @@ class VisualizationEngine:
                 offset -= step
 
         layout = get_plotly_layout(title, height=500)
+        layout["margin"] = dict(l=85, r=35, t=45, b=45)  # Prevents left label overlap
         layout["xaxis"]["title"] = "Time (seconds)"
-        layout["yaxis"]["title"] = "Amplitude (uV) [Stacked]"
+        layout["yaxis"]["title"] = "Amplitude (uV) [Stacked Channels]"
         fig.update_layout(layout)
         return fig
 
@@ -115,8 +117,6 @@ class VisualizationEngine:
             ("Gamma (30-40Hz)", 30.0, 40.0, BAND_COLORS["gamma"])
         ]
 
-        max_psd = np.max(psd) if len(psd) > 0 else 1.0
-
         for b_name, l_f, h_f, color in bands:
             idx = np.where((freqs >= l_f) & (freqs <= h_f))[0]
             if len(idx) > 0:
@@ -134,6 +134,113 @@ class VisualizationEngine:
         layout["xaxis"]["title"] = "Frequency (Hz)"
         layout["yaxis"]["title"] = "Power (uV^2 / Hz)"
         layout["xaxis"]["range"] = [0, 45]
+        fig.update_layout(layout)
+        return fig
+
+    @staticmethod
+    def plot_psd_curves(
+        eeg_data: EEGData,
+        selected_channels: Optional[List[str]] = None,
+        fs: float = 256.0
+    ) -> go.Figure:
+        """Plot Welch PSD curves across multiple channels simultaneously."""
+        channels = selected_channels or eeg_data.channel_names[:min(4, eeg_data.n_channels)]
+        fig = go.Figure()
+
+        fs = eeg_data.sampling_rate
+        for ch in channels:
+            if ch in eeg_data.channel_names:
+                idx = eeg_data.channel_names.index(ch)
+                sig = eeg_data.signals[idx]
+                freqs, psd = signal.welch(sig, fs=fs, nperseg=int(fs * 2.0))
+
+                fig.add_trace(go.Scatter(
+                    x=freqs,
+                    y=psd,
+                    mode="lines",
+                    name=f"Channel {ch}",
+                    line=dict(width=1.8)
+                ))
+
+        layout = get_plotly_layout("Welch Power Spectral Density (PSD) Curves", height=420)
+        layout["xaxis"]["title"] = "Frequency (Hz)"
+        layout["yaxis"]["title"] = "Power Spectral Density (uV^2 / Hz)"
+        layout["xaxis"]["range"] = [0, 45]
+        fig.update_layout(layout)
+        return fig
+
+    @staticmethod
+    def plot_spectrogram(
+        eeg_data: EEGData,
+        channel_name: str = "Cz"
+    ) -> go.Figure:
+        """Plot Short-Time Fourier Transform (STFT) Spectrogram Time-Frequency Heatmap."""
+        ch = channel_name if channel_name in eeg_data.channel_names else eeg_data.channel_names[0]
+        idx = eeg_data.channel_names.index(ch)
+        sig = eeg_data.signals[idx]
+        fs = eeg_data.sampling_rate
+
+        freqs, times, Sxx = signal.spectrogram(sig, fs=fs, nperseg=int(fs * 1.0), noverlap=int(fs * 0.8))
+        idx_f = np.where(freqs <= 45.0)[0]
+
+        fig = go.Figure(data=go.Heatmap(
+            z=10 * np.log10(Sxx[idx_f, :] + 1e-6),
+            x=times,
+            y=freqs[idx_f],
+            colorscale="Viridis"
+        ))
+
+        layout = get_plotly_layout(f"Time-Frequency STFT Spectrogram (Channel {ch})", height=420)
+        layout["xaxis"]["title"] = "Time (seconds)"
+        layout["yaxis"]["title"] = "Frequency (Hz)"
+        fig.update_layout(layout)
+        return fig
+
+    @staticmethod
+    def plot_topomap(
+        band_powers: Dict[str, float],
+        title: str = "2D Topographic Scalp Power Heatmap"
+    ) -> go.Figure:
+        """Plot 2D Topographic Scalp Power Heatmap across 10-20 channels."""
+        channels = list(band_powers.keys())
+        powers = list(band_powers.values())
+
+        # Approximate 10-20 2D scalp coordinates
+        coords = {
+            "FP1": (-0.3, 0.8), "FP2": (0.3, 0.8),
+            "F3": (-0.5, 0.4), "FZ": (0.0, 0.4), "F4": (0.5, 0.4),
+            "C3": (-0.6, 0.0), "CZ": (0.0, 0.0), "C4": (0.6, 0.0),
+            "P3": (-0.5, -0.4), "PZ": (0.0, -0.4), "P4": (0.5, -0.4),
+            "O1": (-0.3, -0.8), "O2": (0.3, -0.8),
+            "T7": (-0.9, 0.0), "T8": (0.9, 0.0),
+            "P7": (-0.8, -0.5), "P8": (0.8, -0.5)
+        }
+
+        xs, ys, zs, labels = [], [], [], []
+        for ch, val in zip(channels, powers):
+            ch_u = ch.upper()
+            if ch_u in coords:
+                xs.append(coords[ch_u][0])
+                ys.append(coords[ch_u][1])
+                zs.append(val)
+                labels.append(ch_u)
+
+        fig = go.Figure()
+        if xs:
+            fig.add_trace(go.Scatter(
+                x=xs, y=ys,
+                mode="markers+text",
+                marker=dict(size=28, color=zs, colorscale="Jet", showscale=True),
+                text=labels,
+                textposition="middle center",
+                textfont=dict(color="#ffffff", size=9, family="monospace")
+            ))
+
+        layout = get_plotly_layout(title, height=420)
+        layout["xaxis"]["showgrid"] = False
+        layout["yaxis"]["showgrid"] = False
+        layout["xaxis"]["zeroline"] = False
+        layout["yaxis"]["zeroline"] = False
         fig.update_layout(layout)
         return fig
 
@@ -181,7 +288,6 @@ class VisualizationEngine:
         loa_u = ba_metrics.get("loa_upper_95", 0.0)
         loa_l = ba_metrics.get("loa_lower_95", 0.0)
 
-        # Plot horizontal bias lines
         fig.add_hline(y=bias, line_dash="dash", line_color=MEDICAL_DARK_THEME["accent_cyan"], annotation_text=f"Mean Bias ({bias:.2f})")
         fig.add_hline(y=loa_u, line_dash="dot", line_color=MEDICAL_DARK_THEME["warning_yellow"], annotation_text=f"+1.96 SD ({loa_u:.2f})")
         fig.add_hline(y=loa_l, line_dash="dot", line_color=MEDICAL_DARK_THEME["warning_yellow"], annotation_text=f"-1.96 SD ({loa_l:.2f})")
