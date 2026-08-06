@@ -1,6 +1,6 @@
 """
 UI Components & Custom CSS Styling for NeuroLearn Research Suite Streamlit Dashboard.
-Implements modern Dark Medical Theme (Navy #0a192f, Dark Slate #172a45, Cyan #64ffda, Medical Blue #0052cc).
+Implements modern Glassmorphic Medical Dark Theme (Navy #060d19, Dark Slate #142642, Cyan #64ffda, Medical Blue #0052cc).
 """
 
 import streamlit as st
@@ -8,67 +8,104 @@ from visualization.styles import MEDICAL_DARK_THEME
 
 
 def apply_custom_css():
-    """Inject custom CSS for modern medical dark mode theme."""
+    """Inject custom CSS for modern medical dark mode theme with glassmorphic aesthetics."""
     st.markdown(f"""
     <style>
-    /* Main Background */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+    /* Main App Background & Radial Ambient Lighting */
     .stApp {{
-        background-color: {MEDICAL_DARK_THEME["bg_color"]};
-        color: {MEDICAL_DARK_THEME["text_color"]};
+        background-color: #060d19;
+        background-image: 
+            radial-gradient(at 0% 0%, rgba(0, 210, 255, 0.12) 0px, transparent 50%),
+            radial-gradient(at 100% 0%, rgba(100, 255, 218, 0.08) 0px, transparent 50%),
+            radial-gradient(at 50% 100%, rgba(168, 85, 247, 0.1) 0px, transparent 50%);
+        background-attachment: fixed;
+        color: #f1f7ff;
         font-family: 'Inter', sans-serif;
     }}
     
-    /* Sidebar styling */
+    /* Sidebar Styling */
     section[data-testid="stSidebar"] {{
-        background-color: {MEDICAL_DARK_THEME["paper_bg"]};
-        border-right: 1px solid {MEDICAL_DARK_THEME["grid_color"]};
+        background-color: rgba(12, 25, 48, 0.85) !important;
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border-right: 1px solid rgba(100, 255, 218, 0.15);
     }}
-    
-    /* Card Container */
+
+    /* Card Container with Glassmorphism & Hover Glow */
     .med-card {{
-        background-color: {MEDICAL_DARK_THEME["card_bg"]};
-        border: 1px solid {MEDICAL_DARK_THEME["grid_color"]};
-        border-radius: 8px;
-        padding: 18px;
-        margin-bottom: 15px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        background: rgba(20, 38, 66, 0.7);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(100, 255, 218, 0.18);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 18px;
+        box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.45);
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }}
+
+    .med-card::before {{
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: linear-gradient(90deg, #0052cc, #64ffda);
+    }}
+
+    .med-card:hover {{
+        transform: translateY(-4px);
+        border-color: #64ffda;
+        box-shadow: 0 0 20px rgba(100, 255, 218, 0.35);
     }}
     
-    /* KPI Card styling */
+    /* KPI Card Styling */
     .kpi-title {{
-        font-size: 0.85rem;
-        color: {MEDICAL_DARK_THEME["subtext_color"]};
+        font-size: 0.8rem;
+        color: #94a3b8;
         text-transform: uppercase;
-        letter-spacing: 0.05em;
-        margin-bottom: 4px;
+        letter-spacing: 0.08em;
+        font-weight: 600;
+        margin-bottom: 6px;
     }}
     .kpi-value {{
-        font-size: 1.8rem;
-        font-weight: 700;
-        color: {MEDICAL_DARK_THEME["accent_cyan"]};
+        font-size: 1.9rem;
+        font-weight: 800;
+        color: #64ffda;
+        font-family: 'JetBrains Mono', monospace;
+        text-shadow: 0 0 10px rgba(100, 255, 218, 0.3);
     }}
     .kpi-subtext {{
         font-size: 0.8rem;
-        color: {MEDICAL_DARK_THEME["accent_blue"]};
-        margin-top: 2px;
+        color: #00d2ff;
+        margin-top: 4px;
+        font-weight: 500;
     }}
     
-    /* Badge tags */
+    /* Badge Tags */
     .badge-medical {{
-        background-color: {MEDICAL_DARK_THEME["medical_blue"]};
+        background: linear-gradient(135deg, #0052cc, #0040a8);
         color: #ffffff;
-        padding: 4px 10px;
+        padding: 4px 12px;
         border-radius: 12px;
-        font-size: 0.8rem;
+        font-size: 0.78rem;
         font-weight: 600;
+        box-shadow: 0 0 10px rgba(0, 82, 204, 0.4);
     }}
     .badge-cyan {{
-        background-color: {MEDICAL_DARK_THEME["accent_cyan"]};
-        color: #0a192f;
-        padding: 4px 10px;
+        background: rgba(100, 255, 218, 0.15);
+        border: 1px solid rgba(100, 255, 218, 0.4);
+        color: #64ffda;
+        padding: 4px 12px;
         border-radius: 12px;
-        font-size: 0.8rem;
+        font-size: 0.78rem;
         font-weight: 700;
+        box-shadow: 0 0 12px rgba(100, 255, 218, 0.2);
     }}
     </style>
     """, unsafe_allow_html=True)
@@ -90,13 +127,13 @@ def render_kpi_card(title: str, value: str, subtext: str = "", badge: str = ""):
 
 
 def render_header(title: str, subtitle: str = ""):
-    """Render standardized page header."""
+    """Render standardized page header with neon gradient text."""
     st.markdown(f"""
-    <div style="margin-bottom: 20px;">
-        <h1 style="color: {MEDICAL_DARK_THEME['text_color']}; font-size: 2.2rem; margin-bottom: 0px;">
+    <div style="margin-bottom: 24px; border-bottom: 1px solid rgba(100, 255, 218, 0.2); padding-bottom: 12px;">
+        <h1 style="color: #f1f7ff; font-size: 2.2rem; font-weight: 800; margin-bottom: 4px; letter-spacing: -0.5px;">
             {title}
         </h1>
-        <p style="color: {MEDICAL_DARK_THEME['subtext_color']}; font-size: 1.0rem; margin-top: 4px;">
+        <p style="color: #94a3b8; font-size: 1.0rem; font-weight: 400; margin-top: 0px;">
             {subtitle}
         </p>
     </div>

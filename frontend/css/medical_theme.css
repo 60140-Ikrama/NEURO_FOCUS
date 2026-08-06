@@ -1,40 +1,45 @@
-/* NeuroLearn Research Suite - Medical Dark Design System */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+/* NeuroLearn Research Suite - Premium Scientific Dark Design System */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
 :root {
   /* Color Tokens */
-  --bg-dark: #0a192f;
-  --panel-bg: #172a45;
-  --card-bg: #172a45;
-  --card-border: #233554;
-  --text-primary: #e6f1ff;
-  --text-secondary: #8892b0;
+  --bg-dark: #060d19;
+  --panel-bg: rgba(15, 30, 54, 0.85);
+  --card-bg: rgba(20, 38, 66, 0.7);
+  --card-bg-hover: rgba(28, 52, 88, 0.85);
+  --card-border: rgba(100, 255, 218, 0.15);
+  --text-primary: #f1f7ff;
+  --text-secondary: #94a3b8;
   --text-muted: #64748b;
   
-  /* Accent Colors */
+  /* Accent Neon Colors */
   --accent-cyan: #64ffda;
   --accent-blue: #00d2ff;
   --medical-blue: #0052cc;
+  --purple-glow: #a855f7;
   --warning-amber: #ffb703;
   --error-red: #ff4d4d;
   --success-green: #00e676;
   
   /* Frequency Band Colors */
-  --band-delta: #9b59b6;
-  --band-theta: #3498db;
-  --band-alpha: #2ecc71;
-  --band-beta: #e67e22;
-  --band-gamma: #e74c3c;
+  --band-delta: #a855f7;
+  --band-theta: #38bdf8;
+  --band-alpha: #34d399;
+  --band-beta: #fbbf24;
+  --band-gamma: #f87171;
 
   /* Typography */
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  /* Transitions & Shadows */
-  --transition-fast: 0.15s ease;
-  --transition-normal: 0.25s ease;
-  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-  --glass-border: 1px solid rgba(255, 255, 255, 0.08);
+  /* Shadows & Glassmorphism */
+  --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --glass-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.45);
+  --neon-glow-cyan: 0 0 20px rgba(100, 255, 218, 0.35);
+  --neon-glow-blue: 0 0 20px rgba(0, 210, 255, 0.35);
+  --glass-border: 1px solid rgba(255, 255, 255, 0.12);
+  --glass-backdrop: blur(16px);
 }
 
 * {
@@ -45,6 +50,11 @@
 
 body {
   background-color: var(--bg-dark);
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(0, 210, 255, 0.12) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(100, 255, 218, 0.08) 0px, transparent 50%),
+    radial-gradient(at 50% 100%, rgba(168, 85, 247, 0.1) 0px, transparent 50%);
+  background-attachment: fixed;
   color: var(--text-primary);
   font-family: var(--font-sans);
   font-size: 13px;
@@ -56,6 +66,18 @@ body {
   user-select: none;
 }
 
+/* Glowing Animations */
+@keyframes pulseGlow {
+  0% { box-shadow: 0 0 0 0 rgba(100, 255, 218, 0.6); }
+  70% { box-shadow: 0 0 0 10px rgba(100, 255, 218, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(100, 255, 218, 0); }
+}
+
+@keyframes floatCard {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
 /* Custom Scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
@@ -65,9 +87,9 @@ body {
   background: var(--bg-dark);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--card-border);
+  background: rgba(100, 255, 218, 0.25);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--accent-blue);
+  background: var(--accent-cyan);
 }
