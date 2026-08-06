@@ -33,9 +33,9 @@ with tab1:
 
     if "df_ab_pre" in st.session_state:
         df_ab = st.session_state.df_ab_pre
-        st.dataframe(df_ab, use_container_width=True)
+        st.dataframe(df_ab, width="stretch")
         fig = VisualizationEngine.plot_ablation_matrix(df_ab, "Mean Attention Score Across Preprocessing Pipelines")
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
 with tab2:
     st.markdown("#### **Window Size Sensitivity Analysis (2s to 30s Epochs)**")
@@ -46,9 +46,9 @@ with tab2:
 
     if "df_ab_win" in st.session_state:
         df_ab_w = st.session_state.df_ab_win
-        st.dataframe(df_ab_w, use_container_width=True)
+        st.dataframe(df_ab_w, width="stretch")
         fig_w = VisualizationEngine.plot_ablation_matrix(df_ab_w, "Attention Metrics vs Sliding Window Size")
-        st.plotly_chart(fig_w, use_container_width=True)
+        st.plotly_chart(fig_w, width="stretch")
 
 with tab3:
     st.markdown("#### **PSD Estimation Method Comparison (Welch vs FFT vs Multitaper)**")
@@ -59,9 +59,9 @@ with tab3:
 
     if "df_ab_psd" in st.session_state:
         df_ab_p = st.session_state.df_ab_psd
-        st.dataframe(df_ab_p, use_container_width=True)
+        st.dataframe(df_ab_p, width="stretch")
         fig_p = VisualizationEngine.plot_ablation_matrix(df_ab_p, "Mean Attention Score by PSD Method")
-        st.plotly_chart(fig_p, use_container_width=True)
+        st.plotly_chart(fig_p, width="stretch")
 
 with tab4:
     st.markdown("#### **Neurophysiological Formula Formulation Comparison**")
@@ -72,6 +72,6 @@ with tab4:
 
     if "df_ab_form" in st.session_state:
         df_ab_f = st.session_state.df_ab_form
-        st.dataframe(df_ab_f, use_container_width=True)
+        st.dataframe(df_ab_f, width="stretch")
         fig_f = VisualizationEngine.plot_ablation_matrix(df_ab_f, "Mean Attention Score Across Formulations")
-        st.plotly_chart(fig_f, use_container_width=True)
+        st.plotly_chart(fig_f, width="stretch")

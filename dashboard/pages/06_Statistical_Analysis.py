@@ -68,5 +68,5 @@ st.markdown("### 3. Bland-Altman Agreement Analysis")
 if len(g1) > 0 and len(g2) > 0:
     ba = StatisticalAnalyzer.bland_altman(g1, g2)
     fig_ba = VisualizationEngine.plot_bland_altman(ba, title="Bland-Altman Agreement: Phase 1 vs Phase 2 Attention")
-    st.plotly_chart(fig_ba, use_container_width=True)
+    st.plotly_chart(fig_ba, width="stretch")
     st.caption(f"Bland-Altman Interpretation: {ba['interpretation']}")

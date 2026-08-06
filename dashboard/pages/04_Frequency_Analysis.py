@@ -30,7 +30,7 @@ freqs, psd = extractor.compute_psd(sig, eeg.sampling_rate)
 st.markdown("---")
 
 fig_psd = VisualizationEngine.plot_psd(freqs, psd, channel_name=selected_ch, psd_method=psd_method.capitalize())
-st.plotly_chart(fig_psd, use_container_width=True)
+st.plotly_chart(fig_psd, width="stretch")
 
 # Band Power Breakdown Metrics
 st.markdown("### Band Power Breakdown")
@@ -43,7 +43,7 @@ bands = {
     "Gamma (30-40Hz)": (30.0, 40.0)
 }
 
-trapz_func = getattr(np, 'trapezoid', None)
+trapz_func = getattr(np, 'trapezoid', None) or getattr(np, 'trapz', None)
 tot_p = trapz_func(psd, freqs) if len(psd) > 0 else 1.0
 tot_p = tot_p if tot_p > 0 else 1e-6
 

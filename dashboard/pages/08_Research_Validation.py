@@ -47,6 +47,6 @@ if "val_results" in st.session_state:
         render_kpi_card("Bland-Altman Bias", f"{res['bland_altman']['mean_difference']:.2f}", f"LoA: [{res['bland_altman']['loa_lower_95']:.1f}, {res['bland_altman']['loa_upper_95']:.1f}]")
 
     fig_ba = VisualizationEngine.plot_bland_altman(res["bland_altman"], title="PhysioNet vs Biopac Bland-Altman Agreement")
-    st.plotly_chart(fig_ba, use_container_width=True)
+    st.plotly_chart(fig_ba, width="stretch")
 
     st.success(f"**Statistical Interpretation:** {res['statistical_comparison']['interpretation']}")

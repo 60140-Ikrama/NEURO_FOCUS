@@ -60,11 +60,10 @@ with c2:
 with c3:
     render_kpi_card("Minimum Attention", f"{att_sum['minimum_attention']:.1f} / 100", "Minimum Score")
 with c4:
-    render_kpi_card("Attention Stability", f"{att_sum['stability_index']:.1f} / 100", f"Drop Events: {att_sum['attention_drop_count']}")
+    render_kpi_card("Attention Stability", f"{att_sum['stability_index']:.1f}%", f"Drop Events: {att_sum['attention_drop_count']}")
 
 fig_timeline = VisualizationEngine.plot_attention_timeline(st.session_state.df_attention)
-st.plotly_chart(fig_timeline, use_container_width=True)
+st.plotly_chart(fig_timeline, width="stretch")
 
-# Data Table
 with st.expander("View Epoch-by-Epoch Attention Scores Data Table"):
-    st.dataframe(st.session_state.df_attention[["epoch_id", "start_sec", "end_sec", "attention_raw", "attention_score", "attention_category"]], use_container_width=True)
+    st.dataframe(st.session_state.df_attention[["epoch_id", "start_sec", "end_sec", "attention_raw", "attention_score", "attention_category"]], width="stretch")

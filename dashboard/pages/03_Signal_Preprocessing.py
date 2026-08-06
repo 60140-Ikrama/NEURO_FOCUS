@@ -13,7 +13,7 @@ from preprocessing.quality import SignalQualityAssessment
 from dashboard.components import render_header, render_kpi_card
 from visualization.plots import VisualizationEngine
 
-render_header("Signal Preprocessing & SQI Audit", "Configure Bandpass, Notch, Baseline Detrending, Normalization, & Quality Audit")
+render_header("Signal Preprocessing & SQI Audit", "Configure Bandpass, Notch, ICA Cleaning, Montage Referencing, & Quality Audit")
 
 c_cfg1, c_cfg2 = st.columns(2)
 
@@ -22,10 +22,12 @@ with c_cfg1:
     low_f = st.number_input("Bandpass Low Cutoff (Hz):", 0.1, 10.0, 1.0, 0.5)
     high_f = st.number_input("Bandpass High Cutoff (Hz):", 15.0, 70.0, 40.0, 5.0)
     notch_f = st.selectbox("Notch Frequency (Powerline):", [50.0, 60.0, 0.0])
+    montage_ref = st.selectbox("Montage Referencing:", ["raw", "car", "bipolar"])
 
 with c_cfg2:
-    st.markdown("#### **Signal Standardization**")
+    st.markdown("#### **Standardization & ICA Rejection**")
     norm_type = st.selectbox("Normalization Method:", ["zscore", "minmax", "robust", "none"])
+    use_ica = st.checkbox("FastICA Artifact Rejection (Ocular & EMG)", value=True)
     detrend_flag = st.checkbox("Baseline Detrending", value=True)
     dc_flag = st.checkbox("DC Offset Removal", value=True)
     auto_exclude = st.checkbox("Auto-Exclude Bad Channels (SQI < 40%)", value=True)
@@ -35,7 +37,9 @@ if st.button("Apply Preprocessing Pipeline", type="primary"):
         lowcut=low_f, highcut=high_f,
         notch_freq=notch_f,
         detrend=detrend_flag, dc_offset_removal=dc_flag,
-        normalization=norm_type
+        normalization=norm_type,
+        montage_ref=montage_ref,
+        use_ica=use_ica
     )
     clean_data, log = cleaner.process(st.session_state.current_eeg)
 
@@ -63,4 +67,4 @@ with c3:
     render_kpi_card("Excluded Channels", f"{len(sqi['bad_channels'])}", ", ".join(sqi['bad_channels']) if sqi['bad_channels'] else "None")
 
 fig_sqi = VisualizationEngine.plot_signal_quality(sqi)
-st.plotly_chart(fig_sqi, use_container_width=True)
+st.plotly_chart(fig_sqi, width="stretch")
