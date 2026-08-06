@@ -1,6 +1,7 @@
 """
 UI Components & Custom CSS Styling for NeuroLearn Research Suite Streamlit Dashboard.
 Implements modern Glassmorphic Medical Dark Theme (Navy #060d19, Dark Slate #142642, Cyan #64ffda, Medical Blue #0052cc).
+Includes session state safeguards for direct sub-page navigation.
 """
 
 import streamlit as st
@@ -111,6 +112,44 @@ def apply_custom_css():
     """, unsafe_allow_html=True)
 
 
+def ensure_session_state():
+    """Safely initialize st.session_state for sub-page rendering and direct navigation."""
+    from config.manager import ConfigManager
+    from data.sample_generator import generate_synthetic_eeg, save_sample_datasets
+    from preprocessing.cleaner import EEGPreprocessor
+    from preprocessing.quality import SignalQualityAssessment
+    from segmentation.windowing import EEGSegmenter
+    from features.extractor import FeatureExtractionEngine
+    from attention.calculator import AttentionCalculator
+
+    if "config" not in st.session_state:
+        st.session_state.config = ConfigManager()
+
+    if "current_eeg" not in st.session_state:
+        save_sample_datasets()
+        st.session_state.current_eeg = generate_synthetic_eeg(duration_sec=30.0, state="focused")
+
+    if "clean_eeg" not in st.session_state:
+        cleaner = EEGPreprocessor(lowcut=1.0, highcut=40.0, notch_freq=50.0)
+        clean_data, log = cleaner.process(st.session_state.current_eeg)
+        st.session_state.clean_eeg = clean_data
+        st.session_state.preproc_log = log
+
+    if "sqi_report" not in st.session_state:
+        sqa = SignalQualityAssessment()
+        st.session_state.sqi_report = sqa.evaluate(st.session_state.current_eeg)
+
+    if "df_attention" not in st.session_state:
+        segmenter = EEGSegmenter(window_sec=5.0, overlap_ratio=0.5)
+        epochs = segmenter.segment(st.session_state.clean_eeg)
+        fe = FeatureExtractionEngine(psd_method="welch")
+        df_feat = fe.extract_features(epochs)
+        calc = AttentionCalculator(formula_str="beta / theta")
+        df_att, summary = calc.compute_attention(df_feat)
+        st.session_state.df_attention = df_att
+        st.session_state.att_summary = summary
+
+
 def render_kpi_card(title: str, value: str, subtext: str = "", badge: str = ""):
     """Render a styled medical KPI metric card."""
     badge_html = f'<span class="badge-cyan">{badge}</span>' if badge else ""
@@ -127,7 +166,8 @@ def render_kpi_card(title: str, value: str, subtext: str = "", badge: str = ""):
 
 
 def render_header(title: str, subtitle: str = ""):
-    """Render standardized page header with neon gradient text."""
+    """Render standardized page header with neon gradient text and ensure session state."""
+    ensure_session_state()
     st.markdown(f"""
     <div style="margin-bottom: 24px; border-bottom: 1px solid rgba(100, 255, 218, 0.2); padding-bottom: 12px;">
         <h1 style="color: #f1f7ff; font-size: 2.2rem; font-weight: 800; margin-bottom: 4px; letter-spacing: -0.5px;">
